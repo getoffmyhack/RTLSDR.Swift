@@ -2,8 +2,7 @@
 //  RTLSDR_Swift.h
 //  RTLSDR.Swift
 //
-//  Created by Justin England on 5/8/19.
-//  Copyright © 2019 Justin England. All rights reserved.
+//  Copyright © 2019 GetOffMyHack. All rights reserved.
 //
 
 #import <Cocoa/Cocoa.h>

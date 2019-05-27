@@ -10,6 +10,8 @@
 		D00C6CF722834A4700D14EA5 /* RTLSDR_Swift.h in Headers */ = {isa = PBXBuildFile; fileRef = D00C6CF522834A4700D14EA5 /* RTLSDR_Swift.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D00C6CFE22834B2B00D14EA5 /* RTLSDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00C6CFD22834B2B00D14EA5 /* RTLSDR.swift */; };
 		D00C6D0022834B5800D14EA5 /* RTLSDRTuner.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00C6CFF22834B5800D14EA5 /* RTLSDRTuner.swift */; };
+		D00FCE4C228FE39800C7B9A1 /* 20190518.md in Resources */ = {isa = PBXBuildFile; fileRef = D00FCE4B228FE39800C7B9A1 /* 20190518.md */; };
+		D06D35342293C3A700F517C5 /* readme.md in Resources */ = {isa = PBXBuildFile; fileRef = D06D35332293C3A700F517C5 /* readme.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -18,6 +20,10 @@
 		D00C6CF622834A4700D14EA5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D00C6CFD22834B2B00D14EA5 /* RTLSDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTLSDR.swift; sourceTree = "<group>"; };
 		D00C6CFF22834B5800D14EA5 /* RTLSDRTuner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTLSDRTuner.swift; sourceTree = "<group>"; };
+		D00FCE4B228FE39800C7B9A1 /* 20190518.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = 20190518.md; sourceTree = "<group>"; };
+		D06D35332293C3A700F517C5 /* readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = readme.md; sourceTree = "<group>"; };
+		D0AE974C229AE8E8000A4710 /* 20190527.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = 20190527.md; sourceTree = "<group>"; };
+		D0DD303E2290CCAF00BA5E96 /* librtlsdr.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = librtlsdr.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,12 +56,40 @@
 		D00C6CF422834A4700D14EA5 /* RTLSDR.Swift */ = {
 			isa = PBXGroup;
 			children = (
+				D0AE974B229AE8CB000A4710 /* BuildLog */,
+				D0DD303D2290CC8A00BA5E96 /* librtlsdr */,
+				D00FCE4A228FE34C00C7B9A1 /* BuildLog */,
 				D00C6CF522834A4700D14EA5 /* RTLSDR_Swift.h */,
 				D00C6CF622834A4700D14EA5 /* Info.plist */,
 				D00C6CFD22834B2B00D14EA5 /* RTLSDR.swift */,
 				D00C6CFF22834B5800D14EA5 /* RTLSDRTuner.swift */,
+				D06D35332293C3A700F517C5 /* readme.md */,
 			);
 			path = RTLSDR.Swift;
+			sourceTree = "<group>";
+		};
+		D00FCE4A228FE34C00C7B9A1 /* BuildLog */ = {
+			isa = PBXGroup;
+			children = (
+				D00FCE4B228FE39800C7B9A1 /* 20190518.md */,
+			);
+			path = BuildLog;
+			sourceTree = "<group>";
+		};
+		D0AE974B229AE8CB000A4710 /* BuildLog */ = {
+			isa = PBXGroup;
+			children = (
+				D0AE974C229AE8E8000A4710 /* 20190527.md */,
+			);
+			path = BuildLog;
+			sourceTree = "<group>";
+		};
+		D0DD303D2290CC8A00BA5E96 /* librtlsdr */ = {
+			isa = PBXGroup;
+			children = (
+				D0DD303E2290CCAF00BA5E96 /* librtlsdr.c */,
+			);
+			path = librtlsdr;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -127,6 +161,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D06D35342293C3A700F517C5 /* readme.md in Resources */,
+				D00FCE4C228FE39800C7B9A1 /* 20190518.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
