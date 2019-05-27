@@ -40,6 +40,7 @@
 		D00C6CE822834A4700D14EA5 = {
 			isa = PBXGroup;
 			children = (
+				D06D35332293C3A700F517C5 /* readme.md */,
 				D00C6CF422834A4700D14EA5 /* RTLSDR.Swift */,
 				D00C6CF322834A4700D14EA5 /* Products */,
 			);
@@ -63,7 +64,6 @@
 				D00C6CF622834A4700D14EA5 /* Info.plist */,
 				D00C6CFD22834B2B00D14EA5 /* RTLSDR.swift */,
 				D00C6CFF22834B5800D14EA5 /* RTLSDRTuner.swift */,
-				D06D35332293C3A700F517C5 /* readme.md */,
 			);
 			path = RTLSDR.Swift;
 			sourceTree = "<group>";
