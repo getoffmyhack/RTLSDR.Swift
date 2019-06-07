@@ -21,7 +21,6 @@
 		D00C6CF622834A4700D14EA5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D00C6CFD22834B2B00D14EA5 /* RTLSDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTLSDR.swift; sourceTree = "<group>"; };
 		D00C6CFF22834B5800D14EA5 /* RTLSDRTuner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTLSDRTuner.swift; sourceTree = "<group>"; };
-		D00FCE4B228FE39800C7B9A1 /* 20190518.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = 20190518.md; sourceTree = "<group>"; };
 		D03140CF22A875630062EE09 /* 20190606.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = 20190606.md; sourceTree = "<group>"; };
 		D042449B22A6320A003670FA /* IOKit+USB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IOKit+USB.swift"; sourceTree = "<group>"; };
 		D06D35332293C3A700F517C5 /* readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = readme.md; sourceTree = "<group>"; };
@@ -64,7 +63,6 @@
 			isa = PBXGroup;
 			children = (
 				D0DD303D2290CC8A00BA5E96 /* librtlsdr */,
-				D00FCE4A228FE34C00C7B9A1 /* BuildLog */,
 				D00C6CF522834A4700D14EA5 /* RTLSDR_Swift.h */,
 				D00C6CF622834A4700D14EA5 /* Info.plist */,
 				D00C6CFD22834B2B00D14EA5 /* RTLSDR.swift */,
@@ -74,14 +72,6 @@
 				D0CC938D22A5EFC1001E308D /* io_object_t+IOUSBDevice.swift */,
 			);
 			path = RTLSDR.Swift;
-			sourceTree = "<group>";
-		};
-		D00FCE4A228FE34C00C7B9A1 /* BuildLog */ = {
-			isa = PBXGroup;
-			children = (
-				D00FCE4B228FE39800C7B9A1 /* 20190518.md */,
-			);
-			path = BuildLog;
 			sourceTree = "<group>";
 		};
 		D0AE974B229AE8CB000A4710 /* BuildLog */ = {
