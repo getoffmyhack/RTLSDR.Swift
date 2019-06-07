@@ -10,8 +10,9 @@
 		D00C6CF722834A4700D14EA5 /* RTLSDR_Swift.h in Headers */ = {isa = PBXBuildFile; fileRef = D00C6CF522834A4700D14EA5 /* RTLSDR_Swift.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D00C6CFE22834B2B00D14EA5 /* RTLSDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00C6CFD22834B2B00D14EA5 /* RTLSDR.swift */; };
 		D00C6D0022834B5800D14EA5 /* RTLSDRTuner.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00C6CFF22834B5800D14EA5 /* RTLSDRTuner.swift */; };
-		D00FCE4C228FE39800C7B9A1 /* 20190518.md in Resources */ = {isa = PBXBuildFile; fileRef = D00FCE4B228FE39800C7B9A1 /* 20190518.md */; };
-		D06D35342293C3A700F517C5 /* readme.md in Resources */ = {isa = PBXBuildFile; fileRef = D06D35332293C3A700F517C5 /* readme.md */; };
+		D042449C22A6320A003670FA /* IOKit+USB.swift in Sources */ = {isa = PBXBuildFile; fileRef = D042449B22A6320A003670FA /* IOKit+USB.swift */; };
+		D0CC938C22A5EA8C001E308D /* RTLKnownDeviceList.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0CC938B22A5EA8C001E308D /* RTLKnownDeviceList.swift */; };
+		D0CC938E22A5EFC1001E308D /* io_object_t+IOUSBDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0CC938D22A5EFC1001E308D /* io_object_t+IOUSBDevice.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,8 +22,12 @@
 		D00C6CFD22834B2B00D14EA5 /* RTLSDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTLSDR.swift; sourceTree = "<group>"; };
 		D00C6CFF22834B5800D14EA5 /* RTLSDRTuner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTLSDRTuner.swift; sourceTree = "<group>"; };
 		D00FCE4B228FE39800C7B9A1 /* 20190518.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = 20190518.md; sourceTree = "<group>"; };
+		D03140CF22A875630062EE09 /* 20190605.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = 20190605.md; sourceTree = "<group>"; };
+		D042449B22A6320A003670FA /* IOKit+USB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IOKit+USB.swift"; sourceTree = "<group>"; };
 		D06D35332293C3A700F517C5 /* readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = readme.md; sourceTree = "<group>"; };
 		D0AE974C229AE8E8000A4710 /* 20190527.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = 20190527.md; sourceTree = "<group>"; };
+		D0CC938B22A5EA8C001E308D /* RTLKnownDeviceList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RTLKnownDeviceList.swift; sourceTree = "<group>"; };
+		D0CC938D22A5EFC1001E308D /* io_object_t+IOUSBDevice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "io_object_t+IOUSBDevice.swift"; sourceTree = "<group>"; };
 		D0DD303E2290CCAF00BA5E96 /* librtlsdr.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = librtlsdr.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -63,7 +68,10 @@
 				D00C6CF522834A4700D14EA5 /* RTLSDR_Swift.h */,
 				D00C6CF622834A4700D14EA5 /* Info.plist */,
 				D00C6CFD22834B2B00D14EA5 /* RTLSDR.swift */,
+				D0CC938B22A5EA8C001E308D /* RTLKnownDeviceList.swift */,
 				D00C6CFF22834B5800D14EA5 /* RTLSDRTuner.swift */,
+				D042449B22A6320A003670FA /* IOKit+USB.swift */,
+				D0CC938D22A5EFC1001E308D /* io_object_t+IOUSBDevice.swift */,
 			);
 			path = RTLSDR.Swift;
 			sourceTree = "<group>";
@@ -80,6 +88,7 @@
 			isa = PBXGroup;
 			children = (
 				D0AE974C229AE8E8000A4710 /* 20190527.md */,
+				D03140CF22A875630062EE09 /* 20190605.md */,
 			);
 			path = BuildLog;
 			sourceTree = "<group>";
@@ -161,8 +170,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D06D35342293C3A700F517C5 /* readme.md in Resources */,
-				D00FCE4C228FE39800C7B9A1 /* 20190518.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -174,7 +181,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				D00C6CFE22834B2B00D14EA5 /* RTLSDR.swift in Sources */,
+				D0CC938C22A5EA8C001E308D /* RTLKnownDeviceList.swift in Sources */,
+				D0CC938E22A5EFC1001E308D /* io_object_t+IOUSBDevice.swift in Sources */,
 				D00C6D0022834B5800D14EA5 /* RTLSDRTuner.swift in Sources */,
+				D042449C22A6320A003670FA /* IOKit+USB.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

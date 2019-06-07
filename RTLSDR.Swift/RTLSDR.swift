@@ -9,14 +9,420 @@ import Foundation
 import IOKit
 import IOKit.usb
 
-class RTLSDR: NSObject {
 
-    private override init(/* device: USBDevice */) {
+
+
+
+public class RTLSDR: NSObject {
+
+    private let defaults: Dictionary<String, Any> =
+            ["tunerClock" : UInt(28000000)]
+    
+    
+    private var tunerClock:         UInt
+    
+    private let ioRegistryID:       io_registry_id_t
+    private let ioRegistryName:     String
+    private let usbVendorID:        Int
+    private let usbProductID:       Int
+    private let usbVendorName:      String
+    private let usbProductName:     String
+    private let usbSerialString:    String
+    
+
+    private typealias IOUSBDeviceInterfaceUMPtrUMPtr    = UnsafeMutablePointer<UnsafeMutablePointer<IOUSBDeviceInterface>?>?
+    private typealias IOUSBInterfaceInterfaceUMPtrUMPtr = UnsafeMutablePointer<UnsafeMutablePointer<IOUSBInterfaceInterface>?>?
+    
+    
+    private var deviceInterfaceUMPtrUMPtr:      IOUSBDeviceInterfaceUMPtrUMPtr      = nil
+    private var deviceInterface:                IOUSBDeviceInterface                = IOUSBDeviceInterface()
+    
+    private var interfaceInterfaceUMPtrUMPtr:   IOUSBInterfaceInterfaceUMPtrUMPtr   = nil
+    private var interfaceInterface:             IOUSBInterfaceInterface             = IOUSBInterfaceInterface()
+    
+    private var usbDeviceConfiguration:         IOUSBConfigurationDescriptor        = IOUSBConfigurationDescriptor()
+    private var usbInterfaceConfiguration:      IOUSBInterfaceDescriptor            = IOUSBInterfaceDescriptor()
+    
+    private static var rtlDeviceList: Dictionary<io_registry_id_t, RTLSDR> = [:]
+    
+    //--------------------------------------------------------------------------
+    //
+    //
+    //
+    //--------------------------------------------------------------------------
+    
+    public class func initWithRegistryID(registryID: io_registry_id_t) -> RTLSDR? {
         
-        // the init method will require a USBDevice struct that is a
-        // known RTLSDR device.  This will be a private method and only
-        // callable from a class factory method that determines if the
-        // USBDevice is an RTL device, and if so, will call init.
+        var rtlsdrDevice: RTLSDR? = nil
+        
+        // check if RTLSDR device is already init'd
+        if let device = rtlDeviceList[registryID] {
+            rtlsdrDevice = device
+        } else {
+            
+            //
+            // check if passed in registry ID is an RTLSDR
+            //
+            
+            // get mach master port
+            var masterPort: mach_port_t = 0
+            
+            // make sure the IOMasterPort call succeeds
+            guard IOMasterPort(mach_port_t(MACH_PORT_NULL), &masterPort) == kIOReturnSuccess else {
+                fatalError("Unable to get master mach port!")
+            }
+            
+            // set up matching dictionary
+            let matchingDictionary: NSMutableDictionary = IORegistryEntryIDMatching(registryID)
+            
+            // get io object for this registry ID and make sure it exists
+            let device = IOServiceGetMatchingService(masterPort, matchingDictionary)
+            guard device != IO_OBJECT_NULL else {
+                fatalError("Unable to get device object!")
+            }
+
+            // with the device object, get the VID / PID and check if
+            // known RTLSDR devive (list found in librtlsdr.c)
+            if(RTLKnownDevices.isKnownRTLDevice(vid: device.usbVendorID()!, pid: device.usbProductID()!)) {
+                rtlsdrDevice = RTLSDR(deviceToInit: device)
+            }
+            
+            IOObjectRelease(device)
+            
+        }
+        
+        return rtlsdrDevice
+        
+    }
+    
+    //--------------------------------------------------------------------------
+    //
+    //
+    //
+    //--------------------------------------------------------------------------
+
+    private init(deviceToInit: io_object_t) {
+        
+        // init instance properties to defaults
+        self.tunerClock = defaults["tunerClock"] as! UInt
+        
+        // retreive identifing info from IORegistry using the device object
+        self.ioRegistryID       = deviceToInit.ioRegistryID()
+        self.ioRegistryName     = deviceToInit.ioRegistryName()!
+        self.usbVendorID        = deviceToInit.usbVendorID()!
+        self.usbProductID       = deviceToInit.usbProductID()!
+        self.usbVendorName      = deviceToInit.usbVendorName()!
+        self.usbProductName     = deviceToInit.usbProductName()!
+        self.usbSerialString    = deviceToInit.usbSerialNumber()!
+        
+        super.init()
+        
+        for(key, value) in deviceToInit.getProperties()! {
+            print("Key: \(key)\t\(value)")
+        }
+        
+        // get the device's USB device interface from IOKit
+        self.getDeviceInterface(device: deviceToInit)
+
+        // open the device and proceed to set its USB Configuration
+        let deviceOpenResult = deviceInterface.USBDeviceOpen(deviceInterfaceUMPtrUMPtr)
+        if(deviceOpenResult == kIOReturnSuccess) {
+            print("Device OPENED!!")
+        }
+        
+        // set the USB Configuration
+        self.configureUSBDeviceConfiguration()
+        
+        // find the interfaceInterface that is bulk-in as that is what is used
+        // to get the IQ samples from the device
+        self.findInterfaceInterface()
+        
+        _ = deviceInterface.USBDeviceClose(deviceInterfaceUMPtrUMPtr)
+
+//        super.init()
+        
+    }
+    
+    //--------------------------------------------------------------------------
+    //
+    //
+    //
+    //--------------------------------------------------------------------------
+    
+    private func getDeviceInterface(device: io_object_t) {
+        
+        var interfaceUMPtrUMPtr:  IOUSBDeviceInterfaceUMPtrUMPtr  = nil
+        
+        //
+        // use a plugin interface to find the device interface
+        //
+        var plugInInterfaceUMPtrUMPtr:UnsafeMutablePointer<UnsafeMutablePointer<IOCFPlugInInterface>?>?
+        var score: Int32 = 0
+        
+        // Get plugInInterface for current USB device
+        let plugInInterfaceResult = IOCreatePlugInInterfaceForService(
+            device,
+            kIOUSBDeviceUserClientTypeID,
+            kIOCFPlugInInterfaceID,
+            &plugInInterfaceUMPtrUMPtr,
+            &score)
+        
+        IOObjectRelease(device)
+        
+        // check if IOCreatePlugInInterfaceForService was successful
+        if ( (plugInInterfaceResult != kIOReturnSuccess)) {
+            fatalError("Unable to get Plug-In Interface")
+        }
+        
+        // Dereference pointer for the plug-in interface
+        guard let plugInInterface = plugInInterfaceUMPtrUMPtr?.pointee?.pointee else {
+            fatalError("Unable to dereference plugInInterface")
+        }
+        
+        // use plug in interface to get a device interface
+        let queryInterfaceResult = withUnsafeMutablePointer(to: &interfaceUMPtrUMPtr) {
+            $0.withMemoryRebound(to: (LPVOID?).self, capacity: 1) {
+                plugInInterface.QueryInterface(
+                    plugInInterfaceUMPtrUMPtr,
+                    CFUUIDGetUUIDBytes(kIOUSBDeviceInterfaceID),
+                    $0)
+            }
+        }
+        
+        // check if QueryInterface was successful
+        if ( (interfaceUMPtrUMPtr == nil)  || (queryInterfaceResult != kIOReturnSuccess)) {
+            fatalError("Unable to get device Interface")
+        }
+        
+        // dereference device interface and save the pointer -> pointer and
+        // the dereferened to this instance
+        guard let interfaceDereferenced = interfaceUMPtrUMPtr?.pointee?.pointee else {
+            fatalError("Unable to dereference deviceInterface")
+        }
+        
+        // plugInInterface is no longer needed
+        _ = plugInInterface.Release(plugInInterfaceUMPtrUMPtr)
+        plugInInterfaceUMPtrUMPtr = nil
+        
+        self.deviceInterface            = interfaceDereferenced
+        self.deviceInterfaceUMPtrUMPtr  = interfaceUMPtrUMPtr
+        
+    }
+    
+    //--------------------------------------------------------------------------
+    //
+    //
+    //
+    //--------------------------------------------------------------------------
+    
+    private func configureUSBDeviceConfiguration() {
+        
+        //
+        // the following code which gets the number of configs, sets config to
+        // the first (and only) configuration is probably not really needed as
+        // I do not see this happening with librtlsdr.
+        //
+        
+        //
+        // This code is basically out of the "USB Device Interface Guide" from
+        // Apple but re-written in Swift
+        //
+        
+        // get number of configurations
+        var numberOfConfigurations: UInt8 = 0
+        _ = self.deviceInterface.GetNumberOfConfigurations(self.deviceInterfaceUMPtrUMPtr, &numberOfConfigurations)
+        print("Number of Configurations: \(numberOfConfigurations)")
+        
+        // get configuration descriptor
+        var usbConfigurationDescriptorPtr: IOUSBConfigurationDescriptorPtr? = nil
+        _ = self.deviceInterface.GetConfigurationDescriptorPtr(self.deviceInterfaceUMPtrUMPtr, 0, &usbConfigurationDescriptorPtr)
+        let usbConfigurationDescriptor = usbConfigurationDescriptorPtr!.pointee
+        print(usbConfigurationDescriptor)
+        
+        // set to first configuration found in the bConfigurationValue field
+        let setConfigurationResult = self.deviceInterface.SetConfiguration(
+            self.deviceInterfaceUMPtrUMPtr, usbConfigurationDescriptor.bConfigurationValue)
+        
+        if setConfigurationResult != kIOReturnSuccess {
+            fatalError("Unable to setConfiguration: \(setConfigurationResult)")
+        }
+        
+        usbDeviceConfiguration = usbConfigurationDescriptor
+        
+    }
+    
+    //--------------------------------------------------------------------------
+    //
+    //
+    //
+    //--------------------------------------------------------------------------
+    
+    private func findInterfaceInterface() {
+        
+        //
+        // More code from Appple:  iterate over the interfaces found
+        // in this device.
+        //
+        
+        // create interface request structure
+        var interfaceRequest: IOUSBFindInterfaceRequest = IOUSBFindInterfaceRequest(
+            bInterfaceClass:    UInt16(kIOUSBFindInterfaceDontCare),
+            bInterfaceSubClass: UInt16(kIOUSBFindInterfaceDontCare),
+            bInterfaceProtocol: UInt16(kIOUSBFindInterfaceDontCare),
+            bAlternateSetting:  UInt16(kIOUSBFindInterfaceDontCare))
+        
+        // get interface iterator from usb device interface
+        var interfaceIterator: io_iterator_t = 0
+        let interfaceIteratorResult = deviceInterface.CreateInterfaceIterator(
+            deviceInterfaceUMPtrUMPtr,
+            &interfaceRequest,
+            &interfaceIterator)
+        
+        // check for success
+        if interfaceIteratorResult != kIOReturnSuccess {
+            fatalError("Unable to CreateInterfaceIterator: \(interfaceIteratorResult)")
+        }
+        
+        var plugInInterfaceUMPtrUMPtr:UnsafeMutablePointer<UnsafeMutablePointer<IOCFPlugInInterface>?>?
+        
+        var interfaceFound: Bool = false
+        
+        // iterate over the interfaceIterface(s) available with this device
+        while case let interface = IOIteratorNext(interfaceIterator), interface != IO_OBJECT_NULL {
+            
+            if interfaceFound == true {
+                // even though we found the interface, finish iterating interfaces
+                continue
+            }
+            var score: Int32 = 0
+            
+            // create plugin interface to get the interfaceInterface
+            let interfaceForSeriveResult = IOCreatePlugInInterfaceForService(
+                interface,
+                kIOUSBInterfaceUserClientTypeID,
+                kIOCFPlugInInterfaceID,
+                &plugInInterfaceUMPtrUMPtr,
+                &score)
+            
+            // check for success
+            if interfaceForSeriveResult != kIOReturnSuccess {
+                fatalError("Unable to IOCreatePlugInInterfaceForService: \(interfaceForSeriveResult)")
+            }
+            
+            // release interface object as no longer needed
+            _ = IOObjectRelease(interface)
+            
+            // Dereference pointer for the plug-in interface
+            guard let plugInInterface = plugInInterfaceUMPtrUMPtr?.pointee?.pointee else {
+                fatalError("Unable to dereference plugInInterface for Interface")
+            }
+            
+            var interfaceUMPtrUMPtr: UnsafeMutablePointer<UnsafeMutablePointer<IOUSBInterfaceInterface>?>?
+            var interface: IOUSBInterfaceInterface
+            
+            // use plug in interface to get an interfaceInterface
+            let queryInterfaceResult = withUnsafeMutablePointer(to: &interfaceUMPtrUMPtr) {
+                $0.withMemoryRebound(to: (LPVOID?).self, capacity: 1) {
+                    plugInInterface.QueryInterface(
+                        plugInInterfaceUMPtrUMPtr,
+                        CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID),
+                        $0)
+                }
+            }
+            
+            // check if QueryInterface was successful
+            if ( (interfaceUMPtrUMPtr == nil)  || (queryInterfaceResult != kIOReturnSuccess)) {
+                fatalError("Unable to get Interface Interface")
+            }
+            
+            // dereference interface interface and save the pointer -> pointer and
+            // the dereferened to this instance
+            guard let interfaceDereferenced = interfaceUMPtrUMPtr?.pointee?.pointee else {
+                fatalError("Unable to dereference deviceInterface")
+            }
+            
+            interface = interfaceDereferenced
+            
+            // query the inteface for it's properties
+            var interfaceClass:     UInt8 = 0
+            var interfaceSubClass:  UInt8 = 0
+            
+            let interfaceClassResult = interface.GetInterfaceClass(interfaceUMPtrUMPtr, &interfaceClass)
+            if interfaceClassResult != kIOReturnSuccess {
+                fatalError("Unable to GetInterfaceCLass: \(interfaceClassResult)")
+            }
+            
+            print("InterfaceClass: \(interfaceClass)")
+            
+            let interfaceSubClassResult = interface.GetInterfaceSubClass(interfaceUMPtrUMPtr, &interfaceSubClass)
+            if interfaceSubClassResult != kIOReturnSuccess {
+                fatalError("Unable to GetInterfaceCLass: \(interfaceSubClassResult)")
+            }
+            
+            print("InterfaceSubClass: \(interfaceSubClass)")
+            
+            //Now open the interface. This will cause the pipes associated with
+            //the endpoints in the interface descriptor to be instantiated
+            let interfaceOpenResult = interface.USBInterfaceOpen(interfaceUMPtrUMPtr)
+            if interfaceOpenResult != kIOReturnSuccess {
+                fatalError("Unable to USBInterfaceOpen: \(interfaceOpenResult)")
+            }
+            
+            print("Opened interfaceInterface")
+            
+            var interfaceNumberOfEndpoints: UInt8 = 0
+            let endpointsResult = interface.GetNumEndpoints(interfaceUMPtrUMPtr,
+                                                                     &interfaceNumberOfEndpoints);
+            if endpointsResult != kIOReturnSuccess {
+                fatalError("Unable to GetNumEndpoints: \(endpointsResult)")
+            }
+            
+            print("Number of Endpoints: \(interfaceNumberOfEndpoints)")
+            
+            //Access each pipe in turn, starting with the pipe at index 1
+            //The pipe at index 0 is the default control pipe and should be
+            //accessed using (*usbDevice)->DeviceRequest() instead
+            var pipeIndex: UInt8 = 1
+            while (pipeIndex <= interfaceNumberOfEndpoints) {
+                
+                var direction:      UInt8  = 0
+                var number:         UInt8  = 0
+                var transferType:   UInt8  = 0
+                var maxPacketSize:  UInt16 = 0
+                var interval:       UInt8  = 0
+                
+                // get properties for this pipe
+                let pipePropertiesResult =  interface.GetPipeProperties(
+                    interfaceUMPtrUMPtr,
+                    pipeIndex,
+                    &direction,
+                    &number,
+                    &transferType,
+                    &maxPacketSize,
+                    &interval)
+                
+                if pipePropertiesResult != kIOReturnSuccess {
+                    fatalError("Unable to GetPipeProperties: \(pipePropertiesResult)")
+                }
+                
+                
+                // although we can already "guess" which endpoint is needed,
+                // just double check here
+                if(number == 1) && (direction == kUSBIn) && (transferType == kUSBBulk) {
+                    print("Found Bulk-in Interface: \(number)")
+                    self.interfaceInterfaceUMPtrUMPtr   = interfaceUMPtrUMPtr
+                    self.interfaceInterface             = interface
+                    interfaceFound                      = true
+                }
+    
+                // get next pipe details
+                pipeIndex += 1
+                
+            }
+            
+            _ = interface.USBInterfaceClose(interfaceUMPtrUMPtr)
+            
+        }
         
     }
     
