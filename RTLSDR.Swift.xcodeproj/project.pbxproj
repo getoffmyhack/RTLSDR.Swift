@@ -22,7 +22,7 @@
 		D00C6CFD22834B2B00D14EA5 /* RTLSDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTLSDR.swift; sourceTree = "<group>"; };
 		D00C6CFF22834B5800D14EA5 /* RTLSDRTuner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTLSDRTuner.swift; sourceTree = "<group>"; };
 		D00FCE4B228FE39800C7B9A1 /* 20190518.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = 20190518.md; sourceTree = "<group>"; };
-		D03140CF22A875630062EE09 /* 20190605.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = 20190605.md; sourceTree = "<group>"; };
+		D03140CF22A875630062EE09 /* 20190606.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = 20190606.md; sourceTree = "<group>"; };
 		D042449B22A6320A003670FA /* IOKit+USB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IOKit+USB.swift"; sourceTree = "<group>"; };
 		D06D35332293C3A700F517C5 /* readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = readme.md; sourceTree = "<group>"; };
 		D0AE974C229AE8E8000A4710 /* 20190527.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = 20190527.md; sourceTree = "<group>"; };
@@ -88,7 +88,7 @@
 			isa = PBXGroup;
 			children = (
 				D0AE974C229AE8E8000A4710 /* 20190527.md */,
-				D03140CF22A875630062EE09 /* 20190605.md */,
+				D03140CF22A875630062EE09 /* 20190606.md */,
 			);
 			path = BuildLog;
 			sourceTree = "<group>";
