@@ -21,13 +21,16 @@
 		D00C6CF622834A4700D14EA5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D00C6CFD22834B2B00D14EA5 /* RTLSDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTLSDR.swift; sourceTree = "<group>"; };
 		D00C6CFF22834B5800D14EA5 /* RTLSDRTuner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTLSDRTuner.swift; sourceTree = "<group>"; };
+		D00DF50322AA2490008F6195 /* tuner_r82xx.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tuner_r82xx.h; sourceTree = "<group>"; };
+		D00DF50422AA24AB008F6195 /* tuner_r82xx.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = tuner_r82xx.c; sourceTree = "<group>"; };
+		D00DF50522AA24BB008F6195 /* librtlsdr.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = librtlsdr.c; sourceTree = "<group>"; };
+		D00DF50822AA2A58008F6195 /* rtl-sdr.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "rtl-sdr.h"; sourceTree = "<group>"; };
 		D03140CF22A875630062EE09 /* 20190606.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = 20190606.md; sourceTree = "<group>"; };
 		D042449B22A6320A003670FA /* IOKit+USB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IOKit+USB.swift"; sourceTree = "<group>"; };
 		D06D35332293C3A700F517C5 /* readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = readme.md; sourceTree = "<group>"; };
 		D0AE974C229AE8E8000A4710 /* 20190527.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = 20190527.md; sourceTree = "<group>"; };
 		D0CC938B22A5EA8C001E308D /* RTLKnownDeviceList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RTLKnownDeviceList.swift; sourceTree = "<group>"; };
 		D0CC938D22A5EFC1001E308D /* io_object_t+IOUSBDevice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "io_object_t+IOUSBDevice.swift"; sourceTree = "<group>"; };
-		D0DD303E2290CCAF00BA5E96 /* librtlsdr.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = librtlsdr.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,16 +65,32 @@
 		D00C6CF422834A4700D14EA5 /* RTLSDR.Swift */ = {
 			isa = PBXGroup;
 			children = (
+				D00C6CF622834A4700D14EA5 /* Info.plist */,
 				D0DD303D2290CC8A00BA5E96 /* librtlsdr */,
 				D00C6CF522834A4700D14EA5 /* RTLSDR_Swift.h */,
-				D00C6CF622834A4700D14EA5 /* Info.plist */,
+				D00DF50722AA2763008F6195 /* Utility */,
+				D00DF50622AA274A008F6195 /* Tuners */,
 				D00C6CFD22834B2B00D14EA5 /* RTLSDR.swift */,
-				D0CC938B22A5EA8C001E308D /* RTLKnownDeviceList.swift */,
+			);
+			path = RTLSDR.Swift;
+			sourceTree = "<group>";
+		};
+		D00DF50622AA274A008F6195 /* Tuners */ = {
+			isa = PBXGroup;
+			children = (
 				D00C6CFF22834B5800D14EA5 /* RTLSDRTuner.swift */,
+			);
+			path = Tuners;
+			sourceTree = "<group>";
+		};
+		D00DF50722AA2763008F6195 /* Utility */ = {
+			isa = PBXGroup;
+			children = (
+				D0CC938B22A5EA8C001E308D /* RTLKnownDeviceList.swift */,
 				D042449B22A6320A003670FA /* IOKit+USB.swift */,
 				D0CC938D22A5EFC1001E308D /* io_object_t+IOUSBDevice.swift */,
 			);
-			path = RTLSDR.Swift;
+			path = Utility;
 			sourceTree = "<group>";
 		};
 		D0AE974B229AE8CB000A4710 /* BuildLog */ = {
@@ -86,7 +105,10 @@
 		D0DD303D2290CC8A00BA5E96 /* librtlsdr */ = {
 			isa = PBXGroup;
 			children = (
-				D0DD303E2290CCAF00BA5E96 /* librtlsdr.c */,
+				D00DF50322AA2490008F6195 /* tuner_r82xx.h */,
+				D00DF50422AA24AB008F6195 /* tuner_r82xx.c */,
+				D00DF50822AA2A58008F6195 /* rtl-sdr.h */,
+				D00DF50522AA24BB008F6195 /* librtlsdr.c */,
 			);
 			path = librtlsdr;
 			sourceTree = "<group>";

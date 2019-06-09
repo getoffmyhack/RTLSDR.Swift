@@ -162,7 +162,6 @@ class USBManager {
             }
             
             let registryID = device.ioRegistryID()
-            IOObjectRelease(device)
             delegate.usbDeviceAdded(registryID)
 
             IOObjectRelease(device)
@@ -188,7 +187,6 @@ class USBManager {
             }
             
             let registryID = device.ioRegistryID()
-            IOObjectRelease(device)
             delegate.usbDeviceRemoved(registryID)
             
             IOObjectRelease(device)

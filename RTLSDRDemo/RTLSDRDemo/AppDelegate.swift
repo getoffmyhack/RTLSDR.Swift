@@ -31,7 +31,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, USBManagerDelegate {
 
     func usbDeviceAdded(_ id: io_registry_id_t) {
         
-        print("did call usbDeviceAdded")
+//        print("did call usbDeviceAdded")
         let _ = RTLSDR.initWithRegistryID(registryID: id)
     
     }

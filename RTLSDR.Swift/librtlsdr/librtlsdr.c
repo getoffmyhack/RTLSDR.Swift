@@ -559,7 +559,7 @@ uint16_t rtlsdr_read_reg(rtlsdr_dev_t *dev, uint8_t block, uint16_t addr, uint8_
 }
 
 int rtlsdr_write_reg(rtlsdr_dev_t *dev, uint8_t block, uint16_t addr, uint16_t val, uint8_t len)
-{
+{                 //rtlsdr_write_reg(dev, USBB = 1, USB_SYSCTL = 0x2000, 0x09, 1) < 0
 	int r;
 	unsigned char data[2];
 
@@ -600,7 +600,7 @@ uint16_t rtlsdr_demod_read_reg(rtlsdr_dev_t *dev, uint8_t page, uint16_t addr, u
 	return reg;
 }
 
-int rtlsdr_demod_write_reg(rtlsdr_dev_t *dev, uint8_t page, uint16_t addr, uint16_t val, uint8_t len)
+int rtlsdr_demod_write_reg(rtlsdr_dev_t *dev, uint8_t page, uint16_t addr, uint16_t val, uint8_t len) //rtlsdr_demod_write_reg(dev, 1, 0x01, on ? 0x18 : 0x10, 1);
 {
 	int r;
 	unsigned char data[2];
@@ -1607,13 +1607,6 @@ int rtlsdr_get_offset_tuning(rtlsdr_dev_t *dev)
 	return (dev->offs_freq) ? 1 : 0;
 }
 
-/*--------------------------------------------------------------------------*\
-
- MARK: UNNEEDED FUNCTION
- 
- this will be part of a static data struct with a verification funtion
- that performs the same operation
- 
 static rtlsdr_dongle_t *find_known_device(uint16_t vid, uint16_t pid)
 {
 	unsigned int i;
@@ -1628,18 +1621,7 @@ static rtlsdr_dongle_t *find_known_device(uint16_t vid, uint16_t pid)
 
 	return device;
 }
- 
-\*--------------------------------------------------------------------------*/
 
-
-/*--------------------------------------------------------------------------*\
-
- MARK: UNNEEDED FUNCTION
- 
- the device count is not needed for the RTLSDR class as it will only ever be
- instantiated in a 1-to-1 relationship with each physical USB dongle;  An
- external manager class will manage instance creation
- 
 uint32_t rtlsdr_get_device_count(void)
 {
 	int i,r;
@@ -1675,17 +1657,7 @@ uint32_t rtlsdr_get_device_count(void)
 
 	return device_count;
 }
- 
-\*--------------------------------------------------------------------------*/
 
-/*--------------------------------------------------------------------------*\
-
- MARK: UNNEEDED FUNCTION
- 
- the device name from this function is just the text string as found in the
- known_devices[] array of rtlsdr_dongle_t(s) and is not related to the USB
- name
- 
 const char *rtlsdr_get_device_name(uint32_t index)
 {
 	int i,r;
@@ -1732,15 +1704,6 @@ const char *rtlsdr_get_device_name(uint32_t index)
 		return "";
 }
 
-\*--------------------------------------------------------------------------*/
-
-/*--------------------------------------------------------------------------*\
-
- MARK: UNNEEDED FUNCTION
- 
- the device's usb strings will alreay be populated from the layer above and
- found in the device descriptor passed to the init() method
- 
 int rtlsdr_get_device_usb_strings(uint32_t index, char *manufact,
 					 char *product, char *serial)
 {
@@ -1797,14 +1760,6 @@ int rtlsdr_get_device_usb_strings(uint32_t index, char *manufact,
 	return r;
 }
 
-\*--------------------------------------------------------------------------*/
-
-/*--------------------------------------------------------------------------*\
-
- MARK: UNNEEDED FUNCTION
- 
- the index has no meaning anymore
- 
 int rtlsdr_get_index_by_serial(const char *serial)
 {
 	int i, cnt, r;
@@ -1833,9 +1788,6 @@ int rtlsdr_get_index_by_serial(const char *serial)
 
 	return -3;
 }
-
-\*--------------------------------------------------------------------------*/
-
 
 int rtlsdr_open(rtlsdr_dev_t **out_dev, uint32_t index)
 {
