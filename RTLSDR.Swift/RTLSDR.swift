@@ -9,7 +9,25 @@ import Foundation
 import IOKit
 import IOKit.usb
 
-public class RTLSDR: NSObject {
+public class RTLSDR: NSObject, RTLTunerDelegate {
+ 
+    func writeI2CForTuner() {
+        
+    }
+    
+    func readI2CForTuner(deviceI2CAddress: UInt8, address: UInt8) -> UInt8{
+    
+        return readI2CRegister(i2cAddress: deviceI2CAddress, register: address)
+
+    }
+    
+    func enableI2CRepeaterForTuner(on: Bool) {
+        
+        setI2CRepeater(on: on)
+        
+    }
+
+    
 
     // defaults for librtlsdr vars
     private static let defaults: Dictionary<String, Any> =
@@ -92,6 +110,8 @@ public class RTLSDR: NSObject {
         case DEMOD_CTL_1        = 0x300b
         case IR_SUSPEND         = 0x300c
     }
+    
+    private var tuner:              RTLTuner?   = nil
     
 
     //--------------------------------------------------------------------------
@@ -190,6 +210,11 @@ public class RTLSDR: NSObject {
         
         // this is straight from librtlsdr
         self.initBaseband()
+        
+        // find attached tuner
+        if let tuner = RTLTuner.discoverTuner(bootStrap: self) {
+            self.tuner = tuner
+        }
         
         _ = deviceInterface.USBDeviceClose(deviceInterfaceUMPtrUMPtr)
 
@@ -612,6 +637,105 @@ public class RTLSDR: NSObject {
     //
     //--------------------------------------------------------------------------
     
+    private func writeRegisterArray(block: rtlRegisterBlock, address: UInt16, arrayToWrite: inout [UInt8], length: UInt8) {
+        
+        var index: UInt16 = (block.rawValue) | 0x10
+        
+        if( block == .ir) {
+            index = (rtlRegisterBlock.system.rawValue | 0x11)
+        }
+        
+        let requestType = USBmakebmRequestType(direction: kUSBOut, type: kUSBVendor, recipient: kUSBDevice)
+
+        var request = IOUSBDevRequest(bmRequestType: requestType,
+                                      bRequest: 0,
+                                      wValue: address,
+                                      wIndex: index,
+                                      wLength: UInt16(length),
+                                      pData: &arrayToWrite,
+                                      wLenDone: 0)
+        
+        // send IOUSBDevRequest to device interface
+        let requestResponse = self.deviceInterface.DeviceRequest(self.deviceInterfaceUMPtrUMPtr, &request)
+        
+        if requestResponse != kIOReturnSuccess {
+            fatalError("Unable to send Device Request: \(#function):  \(request)")
+        }
+        
+    }
+    
+    //--------------------------------------------------------------------------
+    //
+    //
+    //
+    //--------------------------------------------------------------------------
+    
+    private func readRegisterArrray(block: rtlRegisterBlock, address: UInt16, arrayToRead: inout [UInt8], length: UInt8) {
+        
+        var index: UInt16 = (block.rawValue)
+
+        if( block == .ir) {
+            index = (rtlRegisterBlock.system.rawValue | 0x11)
+        }
+        
+        let requestType = USBmakebmRequestType(direction: kUSBIn, type: kUSBVendor, recipient: kUSBDevice)
+        
+        var request = IOUSBDevRequest(bmRequestType: requestType,
+                                      bRequest: 0,
+                                      wValue: address,
+                                      wIndex: index,
+                                      wLength: UInt16(length),
+                                      pData: &arrayToRead,
+                                      wLenDone: 0)
+        
+        // send IOUSBDevRequest to device interface
+        let requestResponse = self.deviceInterface.DeviceRequest(self.deviceInterfaceUMPtrUMPtr, &request)
+        
+        if requestResponse != kIOReturnSuccess {
+            fatalError("Unable to send Device Request: \(#function):  \(request) Error: \(requestResponse)")
+        }
+        
+    }
+    
+    //--------------------------------------------------------------------------
+    //
+    //
+    //
+    //--------------------------------------------------------------------------
+   
+    func setI2CRepeater(on: Bool) {
+        
+        _ = writeDemodRegister(page: 1, address: 0x01, value: on ? 0x18 : 0x10, length: 1)
+        print("i2c repeater: \(on)")
+        
+    }
+    
+    //--------------------------------------------------------------------------
+    //
+    //
+    //
+    //--------------------------------------------------------------------------
+    
+    func readI2CRegister(i2cAddress: UInt8, register: UInt8) -> UInt8 {
+        
+        var outogingArray:  [UInt8] = [register]
+        var incomingArray:  [UInt8] = [0]
+        
+        writeRegisterArray(block: .i2c, address: UInt16(i2cAddress), arrayToWrite: &outogingArray, length: 1)
+        readRegisterArrray(block: .i2c, address: UInt16(i2cAddress),  arrayToRead: &incomingArray, length: 1)
+
+        return incomingArray[0]
+        
+    }
+    
+    
+    
+    //--------------------------------------------------------------------------
+    //
+    //
+    //
+    //--------------------------------------------------------------------------
+    
     private func initBaseband() {
         
         /* initialize USB */
@@ -637,10 +761,8 @@ public class RTLSDR: NSObject {
             _ = writeDemodRegister(page: 1, address: (UInt16(0x16 + counter)), value: 0x00, length: 1)
         }
         
-        setFirCoefficients()
-        
         /* set fir */
-//        rtlsdr_set_fir(dev);
+        setFirCoefficients()
         
         /* enable SDR mode, disable DAGC (bit 5) */
         _ = writeDemodRegister(page: 0, address: 0x19, value: 0x05, length: 1)
@@ -651,28 +773,23 @@ public class RTLSDR: NSObject {
         
         /* disable AGC (en_dagc, bit 0) (this seems to have no effect) */
         _ = writeDemodRegister(page: 1, address: 0x11, value: 0x00, length: 1)
-//        rtlsdr_demod_write_reg(dev, 1, 0x11, 0x00, 1);
 
         /* disable RF and IF AGC loop */
         _ = writeDemodRegister(page: 1, address: 0x04, value: 0x00, length: 1)
-//        rtlsdr_demod_write_reg(dev, 1, 0x04, 0x00, 1);
         
         /* disable PID filter (enable_PID = 0) */
         _ = writeDemodRegister(page: 0, address: 0x61, value: 0x60, length: 1)
-//        rtlsdr_demod_write_reg(dev, 0, 0x61, 0x60, 1);
         
         /* opt_adc_iq = 0, default ADC_I/ADC_Q datapath */
         _ = writeDemodRegister(page: 0, address: 0x06, value: 0x80, length: 1)
-//        rtlsdr_demod_write_reg(dev, 0, 0x06, 0x80, 1);
         
         /* Enable Zero-IF mode (en_bbin bit), DC cancellation (en_dc_est),
          * IQ estimation/compensation (en_iq_comp, en_iq_est) */
         _ = writeDemodRegister(page: 1, address: 0xb1, value: 0x1b, length: 1)
-//        rtlsdr_demod_write_reg(dev, 1, 0xb1, 0x1b, 1);
         
         /* disable 4.096 MHz clock output on pin TP_CK0 */
         _ = writeDemodRegister(page: 0, address: 0x0d, value: 0x83, length: 1)
-//        rtlsdr_demod_write_reg(dev, 0, 0x0d, 0x83, 1);
+
     }
     
     //--------------------------------------------------------------------------
