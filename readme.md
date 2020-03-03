@@ -1,5 +1,9 @@
 # RTLSDR.Swift
 
+## Update Mar 2020
+
+Back from a hiatus of not working on RTLSDR.Swift and [waveSDR](https://github.com/getoffmyhack/waveSDR).  Will start to finish my port of librtlsdr in the coming days - weeks.  Check build log for updates as I make progress.
+
 ## Intro
 
 This is my attempt to port librtlsdr to Swift + IOKit to make it macOS native (and possibly iOS, but I am not an iOS programmer. (yet?))
