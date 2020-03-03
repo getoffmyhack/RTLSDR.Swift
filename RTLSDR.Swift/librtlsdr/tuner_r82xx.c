@@ -296,7 +296,10 @@ static int r82xx_read_cache_reg(struct r82xx_priv *priv, int reg)
 	reg -= REG_SHADOW_START;
 
 	if (reg >= 0 && reg < NUM_REGS)
+    {
+        fprintf(stderr, "%s: register: %02x value: %02x\n", __FUNCTION__, reg, priv->regs[reg]);
 		return priv->regs[reg];
+    }
 	else
 		return -1;
 }
@@ -304,11 +307,16 @@ static int r82xx_read_cache_reg(struct r82xx_priv *priv, int reg)
 static int r82xx_write_reg_mask(struct r82xx_priv *priv, uint8_t reg, uint8_t val,
 				uint8_t bit_mask)
 {
+    /* Init Flag & Xtal_check Result (inits VGA gain, needed?)*/
+    // rc = r82xx_write_reg_mask(priv, 0x0c, 0x00, 0x0f);
 	int rc = r82xx_read_cache_reg(priv, reg);
+
+    fprintf(stderr, "%s: register: %02x value: %02x\n", __FUNCTION__);
 
 	if (rc < 0)
 		return rc;
 
+    
 	val = (rc & ~bit_mask) | (val & bit_mask);
 
 	return r82xx_write(priv, reg, &val, 1);

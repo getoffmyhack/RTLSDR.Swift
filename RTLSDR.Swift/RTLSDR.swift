@@ -26,9 +26,35 @@ public class RTLSDR: NSObject, RTLTunerDelegate {
         setI2CRepeater(on: on)
         
     }
-
     
+    func writeDemodRegisterForTuner(page: UInt8, address: UInt16, value: UInt16, length: UInt8) {
+        
+        _ = writeDemodRegister(page: page, address: address, value: value, length: length)
+        
+    }
+    
+    func disableZeroIFModeForTuner() {
+        
+        _ = writeDemodRegister(page: 1, address: 0xb1, value: 0x1a, length: 1)
+        
+    }
 
+    func onlyEnableInPhaseADCInputForTuner() {
+        
+        _ = writeDemodRegister(page: 0, address: 0x08, value: 0x4d, length: 1)
+        
+    }
+    
+    func setIFFrequencyForTuner(frequency: UInt32) {
+        
+        _ = setIFFrequency(frequency: frequency)
+    }
+    
+    func enableSpectrumInversionForTuner() {
+        //         rtlsdr_demod_write_reg(dev, 1, 0x15, 0x01, 1);
+        _ = writeDemodRegister(page: 1, address: 0x15, value: 0x01, length: 1)
+    }
+    
     // defaults for librtlsdr vars
     private static let defaults: Dictionary<String, Any> =
         [
@@ -40,8 +66,21 @@ public class RTLSDR: NSObject, RTLTunerDelegate {
         ]
     
     // librtlsdr vars
-    private var tunerClock:         UInt
-    private var rtlXtal:            UInt
+//    private var tunerClock:         UInt
+    private var _rtlXtal:           UInt = 0
+    private var rtlXtal:            UInt {
+        
+        get {
+            let corrected = UInt((( Double(self._rtlXtal) * (1.0 + Double(self.ppmCorrection) / 1000000.0))).rounded(.down))
+            return corrected
+        }
+        
+        set(newValue) {
+            _rtlXtal = newValue
+        }
+        
+    }
+    private var ppmCorrection:      UInt = 0
     
     // librtlsdr constants
     
@@ -173,10 +212,7 @@ public class RTLSDR: NSObject, RTLTunerDelegate {
 
     private init?(deviceToInit: io_object_t) {
         
-        // init librtlsdr properties to defaults
-        self.tunerClock = RTLSDR.defaults["tunerClock"]    as! UInt
-        self.rtlXtal    = RTLSDR.defaults["rtlXtal"]       as! UInt
-        
+
         // retreive identifing info from IORegistry using the device object
         self.ioRegistryID       = deviceToInit.ioRegistryID()
         self.ioRegistryName     = deviceToInit.ioRegistryName()!
@@ -187,6 +223,10 @@ public class RTLSDR: NSObject, RTLTunerDelegate {
         self.usbSerialString    = deviceToInit.usbSerialNumber()!
         
         super.init()
+
+        // librtlsdr defaults
+        self.rtlXtal        = RTLSDR.defaults["rtlXtal"]       as! UInt
+
         
 //        for(key, value) in deviceToInit.getProperties()! {
 //            print("Key: \(key)\t\(value)")
@@ -381,7 +421,7 @@ public class RTLSDR: NSObject, RTLTunerDelegate {
             var score: Int32 = 0
             
             // create plugin interface to get the interfaceInterface
-            let interfaceForSeriveResult = IOCreatePlugInInterfaceForService(
+            let interfaceForServiceResult = IOCreatePlugInInterfaceForService(
                 interfaceObject,
                 kIOUSBInterfaceUserClientTypeID,
                 kIOCFPlugInInterfaceID,
@@ -389,8 +429,8 @@ public class RTLSDR: NSObject, RTLTunerDelegate {
                 &score)
             
             // check for success
-            if interfaceForSeriveResult != kIOReturnSuccess {
-                fatalError("Unable to IOCreatePlugInInterfaceForService: \(interfaceForSeriveResult)")
+            if interfaceForServiceResult != kIOReturnSuccess {
+                fatalError("Unable to IOCreatePlugInInterfaceForService: \(interfaceForServiceResult)")
             }
             
             // Dereference pointer for the plug-in interface
@@ -556,7 +596,7 @@ public class RTLSDR: NSObject, RTLTunerDelegate {
     //
     //--------------------------------------------------------------------------
     
-    func writeDemodRegister(page: UInt8, address: UInt16, value: UInt16, length: UInt8) -> IOUSBDevRequest {
+    private func writeDemodRegister(page: UInt8, address: UInt16, value: UInt16, length: UInt8) -> IOUSBDevRequest {
         //        writeDemodRegister(page: 1, address: 0x01, value: 0x14, length: 1)
 
         var data: [UInt8] = [UInt8]( repeating: 0, count: 2 )
@@ -855,8 +895,8 @@ public class RTLSDR: NSObject, RTLTunerDelegate {
             
             // twiddle the two 12 bit coeff's into 3 UInt8's
             let byte1: UInt8 = UInt8(  uint16Coeff_1 >> 4 )
-            let byte2: UInt8 = UInt8(((uint16Coeff_1 << 4) & 0xff) | (uint16Coeff_2 >> 8) & 0x0f )
-            let byte3: UInt8 = UInt8(  uint16Coeff_2       & 0xff )
+            let byte2: UInt8 = UInt8(((uint16Coeff_1 << 4 ) & 0xff ) | (uint16Coeff_2 >> 8) & 0x0f )
+            let byte3: UInt8 = UInt8(  uint16Coeff_2        & 0xff )
         
             // append the bytes to the rtl filter
             firToSend.append( byte1 )
@@ -873,6 +913,32 @@ public class RTLSDR: NSObject, RTLTunerDelegate {
         }
 
     }
+    
+    func setIFFrequency(frequency: UInt32) {
+
+        /*
+         if_freq = ((freq * TWO_POW(22)) / rtl_xtal) * (-1);
+         */
+
+        let product:        Double  = Double(frequency) * (Double(1 << 22))
+        let quotient:       Double  = ( product / Double(self.rtlXtal) ).rounded(.down)
+        let ifFrequency:    UInt    = UInt(bitPattern: ((-1) * Int(quotient)))
+        
+        var tempByte: UInt8 = 0
+        
+        tempByte = UInt8( (ifFrequency >> 16) & 0x3f)
+        _ = writeDemodRegister(page: 1, address: 0x19, value: UInt16(tempByte), length: 1)
+        
+        tempByte = UInt8( (ifFrequency >> 8) & 0xff)
+        _ = writeDemodRegister(page: 1, address: 0x1a, value: UInt16(tempByte), length: 1)
+        
+        tempByte = UInt8( (ifFrequency) & 0xff)
+        _ = writeDemodRegister(page: 1, address: 0x1b, value: UInt16(tempByte), length: 1)
+            
+    }
+    
+
+
     
     //--------------------------------------------------------------------------
     //

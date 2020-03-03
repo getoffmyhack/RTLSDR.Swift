@@ -615,7 +615,8 @@ uint16_t rtlsdr_demod_read_reg(rtlsdr_dev_t *dev, uint8_t page, uint16_t addr, u
 	return reg;
 }
 
-int rtlsdr_demod_write_reg(rtlsdr_dev_t *dev, uint8_t page, uint16_t addr, uint16_t val, uint8_t len) //rtlsdr_demod_write_reg(dev, 1, 0x01, on ? 0x18 : 0x10, 1);
+int rtlsdr_demod_write_reg(rtlsdr_dev_t *dev, uint8_t page, uint16_t addr, uint16_t val, uint8_t len)
+//rtlsdr_demod_write_reg(dev, 1, 0xb1, 0x1a, 1);
 {
 	int r;
 	unsigned char data[2];

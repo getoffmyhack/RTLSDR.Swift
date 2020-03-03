@@ -34,6 +34,12 @@ protocol RTLTunerDelegate {
     func enableI2CRepeaterForTuner(on: Bool)
     func writeI2CForTuner()
     func readI2CForTuner(deviceI2CAddress: UInt8, address: UInt8) -> UInt8
+    
+    // calls to change the Realtek config from tuner
+    func disableZeroIFModeForTuner()
+    func onlyEnableInPhaseADCInputForTuner()
+    func setIFFrequencyForTuner(frequency: UInt32)
+    func enableSpectrumInversionForTuner()
 
 }
 
