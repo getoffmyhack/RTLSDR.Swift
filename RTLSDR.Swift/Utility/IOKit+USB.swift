@@ -6,6 +6,9 @@
 //
 //
 
+import CoreFoundation
+import IOKit.usb.USB
+
 //------------------------------------------------------------------------------
 //
 // constants and aliases for IOKit and USB devices not imported into Swift
